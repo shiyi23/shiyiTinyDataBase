@@ -140,6 +140,7 @@ public:
         return result;
     }
 
+    //TODO: 换一个性能更高的哈希函数
     int hash(unsigned char* key, int& key_len) 
     {
         if (key == nullptr) return 0;
