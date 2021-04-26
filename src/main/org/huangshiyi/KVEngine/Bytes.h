@@ -2,6 +2,7 @@
 #define BYTES_H_
 
 #include <string>
+#include <deque>
 
 class Bytes
 {
@@ -11,33 +12,33 @@ public:
     Bytes(/* args */);
     ~Bytes();
 
-    const static unsigned char* EMPTY_BYTES;
+    const static std::deque<unsigned char> EMPTY_BYTES;
 
     const static std::string HEX_TMP;
 
-    static unsigned char* toBytes(unsigned char& b);
+    static std::deque<unsigned char> toBytes(unsigned char& b);
 
-    static unsigned char* toBytes(std::string& s);
+    static std::deque<unsigned char> toBytes(std::string& s);
 
-    static unsigned char* toBytes(int& x);
+    static std::deque<unsigned char> toBytes(int& x);
 
-    static unsigned char* toBytes(long& x);
+    static std::deque<unsigned char> toBytes(long& x);
 
-    static std::string toHex(unsigned char* buf, int& buf_array_len);
+    static std::string toHex(std::deque<unsigned char>& buf, int& buf_array_len);
 
-    static std::string toHex(unsigned char* buf, int& offset, int& len);
+    static std::string toHex(std::deque<unsigned char>& buf, int offset, int len);
 
-    static unsigned char* toBytes(unsigned char* a, unsigned char* b, int& a_len, int& b_len);
+    static std::deque<unsigned char> toBytes(std::deque<unsigned char>& a, std::deque<unsigned char>& b, int& a_len, int& b_len);
 
-    static int toInt(unsigned char* a);
+    static int toInt(std::deque<unsigned char>& a);
 
-    static long toLong(unsigned char* a);
+    static long toLong(std::deque<unsigned char>& a);
 
-    static unsigned char* slice(unsigned char* buf, int& offset, int& len, int& buf_len);
+    static std::deque<unsigned char> slice(std::deque<unsigned char>& buf, int& offset, int& len, int& buf_len);
 
-    static int hash(unsigned char* key, int& key_len);
+    static int hash(std::deque<unsigned char>& key, int& key_len);
 
-    static int compare(unsigned char* a, unsigned char* b);
+    static int compare(std::deque<unsigned char>& a, std::deque<unsigned char>& b);
 };
 
 Bytes::Bytes(/* args */)

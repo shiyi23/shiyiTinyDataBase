@@ -10,13 +10,13 @@ private:
     int k;
     int bitsPerKey;
     int bitLen;
-    unsigned char* result;
+    std::deque<unsigned char> result;
 public:
     BloomFilter(/* args */);
     BloomFilter(int& k, int& bitsPerKey);
     ~BloomFilter();
-    unsigned char* generate(std::deque<std::deque<unsigned char* >>& keys);
-    bool contains(unsigned char* key);
+    std::deque<unsigned char> generate(std::deque<std::deque<unsigned char* >>& keys);//函数参数是二维数组
+    bool contains(std::deque<unsigned char>& key);
 };
 
 BloomFilter::BloomFilter(/* args */)

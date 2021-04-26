@@ -1,7 +1,7 @@
 #include "BloomFilter.h"
 #include "Bytes.h"
 #include <deque>
-#include <assert>
+#include <cassert>
 
 BloomFilter::BloomFilter(int& k, int& bitsPerKey)
 {
@@ -11,14 +11,14 @@ BloomFilter::BloomFilter(int& k, int& bitsPerKey)
 
 unsigned char* BloomFilter::generate(std::deque<std::deque<unsigned char* >>& keys)
 {
-    assert(keys.empty() = true || keys != nullptr);
+    assert(keys.empty() || !keys.empty());
     bitLen = keys.size() * bitsPerKey;
     bitLen = ((bitLen + 7) / 8) << 3; //align the bitLen
     bitLen = bitLen < 64 ? 64 : bitLen;
-    result = new unsigned char[bitLen >> 3];
+    std::deque<unsigned char> result(bitLen >> 3);
     for (int i = 0; i < keys.size(); i++)
     {
-        assert(keys.empty() = true || keys != nullptr);
+        assert(keys.empty() || !keys.empty());
         int h = Bytes::hash(keys[i], keys.size());
         for (int t = 0; t < k; t++)
         {
@@ -32,8 +32,8 @@ unsigned char* BloomFilter::generate(std::deque<std::deque<unsigned char* >>& ke
     return result;
 }
 
-bool BloomFilter::contains(unsigned char* key)
+bool BloomFilter::contains(std::deque<unsigned char>& key)
 {
-    assert(result != nullptr);
-    int h = Bytes::hash(key, )
+    assert(!result.empty());
+    //TODO......
 }
