@@ -9,7 +9,7 @@ BloomFilter::BloomFilter(int& k, int& bitsPerKey)
     this->bitsPerKey = bitsPerKey;
 }
 
-unsigned char* BloomFilter::generate(std::deque<std::deque<unsigned char* >>& keys)
+std::deque<unsigned char> BloomFilter::generate(std::deque<std::deque<unsigned char >>& keys)
 {
     assert(keys.empty() || !keys.empty());
     bitLen = keys.size() * bitsPerKey;
