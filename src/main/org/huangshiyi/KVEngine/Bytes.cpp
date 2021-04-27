@@ -2,7 +2,7 @@
 #include <cstring>
 #include <deque>
 #include <algorithm>
-
+#include <iostream>
 
 Bytes::Bytes(){
     std::deque<unsigned char> EMPTY_BYTES;
@@ -114,14 +114,17 @@ long toLong(std::deque<unsigned char>& a) {
 }
 std::deque<unsigned char> slice(std::deque<unsigned char>& buf, int& offset, int& len, int& buf_len) {
     if (buf.empty() ) {
-        //C++的异常机制
-        //C++ 如何实现类似Java的 throw new IOException("buffer is null") ？？
+        throw "buffer is empty";
     }
+
     if (offset < 0 || len < 0) {
-        // throw new IOException("Invalid offset: " + offset + " or len: " + len);
+        std::cout << "Invalid offset or len! " << "offset = " << offset << "len = " << len << "\n";
+        throw "Invalid offset or len!";
     }
+
     if (offset + len > buf_len) {
-        //C++的异常机制
+        std::cout << "Buffer overflow, offset: " << offset << ", len: " << len <<"\n";
+        throw "Buffer overflow";
     }
     std::deque<unsigned char> result(len);
     auto sourceEnd = buf.begin();

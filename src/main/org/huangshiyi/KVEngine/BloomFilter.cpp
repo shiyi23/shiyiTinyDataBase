@@ -19,7 +19,8 @@ std::deque<unsigned char> BloomFilter::generate(std::deque<std::deque<unsigned c
     for (int i = 0; i < keys.size(); i++)
     {
         assert(keys.empty() || !keys.empty());
-        int h = Bytes::hash(keys[i], keys.size());
+        int keysLen = keys.size();
+        int h = Bytes::hash(keys[i], keysLen);
         for (int t = 0; t < k; t++)
         {
             /* code */
