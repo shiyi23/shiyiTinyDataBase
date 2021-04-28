@@ -2,13 +2,14 @@
 #define KVENGINE_h_
 #include "KeyValue.h"
 #include <thread>
+#include <deque>
 
 /**
  * *
  * 参考文章：
  * 1、https://zhuanlan.zhihu.com/p/34658848
  * 2、https://medium.com/@pthtantai97/implement-key-value-store-by-btree-5a100a03da3a
- * 参考repo：
+ * 参考repo：https://github.com/openinx/minibase.git
  */
 
 
@@ -64,11 +65,11 @@ public:
     KVEngine(/* args */);
     virtual ~KVEngine() = 0;
 
-    virtual void put(unsigned char* key, unsigned char* value) = 0;
+    virtual void put(std::deque<unsigned char>& key, std::deque<unsigned char>& value) = 0;
 
-    virtual void get(unsigned char* key) = 0;
+    virtual void get(std::deque<unsigned char>& key) = 0;
 
-    virtual void drop(unsigned char* key) = 0;
+    virtual void drop(std::deque<unsigned char>& key) = 0;
     
      /**
     * Fetch all the key values whose key located in the range [startKey, stopKey)
@@ -79,7 +80,7 @@ public:
     *                 infinity.
     * @return Iterator for fetching the key value one by one.
     */
-    virtual Iter<KeyValue> scan(unsigned char* startKey, unsigned char* stopKey) = 0;
+    virtual Iter<KeyValue> scan(std::deque<unsigned char>& startKey, std::deque<unsigned char>& stopKey) = 0;
 
     /**
      * Full scan the Key Value store.
@@ -93,7 +94,7 @@ public:
     class Compactor : public std::thread {
         public:
         virtual void compact();
-    }
+    };
 
 };
 

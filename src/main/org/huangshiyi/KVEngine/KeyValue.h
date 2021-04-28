@@ -3,10 +3,11 @@
 #include <iostream>
 #include <assert.h>
 #include <string>
+#include <deque>
 // #include <string.h> //for memcpy("dest", "source", "size") function
 // #include <cstring>
 #include <algorithm>
-#include <iterator>
+
 
 class KeyValue
 {
@@ -15,11 +16,11 @@ public:
     KeyValue(const KeyValue& k) {};
     ~KeyValue();
 
-    unsigned char* getKey() {
+    std::deque<unsigned char> getKey() {
         return key;
     }
 
-    unsigned char* getValue() {
+    std::deque<unsigned char> getValue() {
         return value;
     }
 
@@ -35,13 +36,13 @@ public:
         return RAW_KEY_LEN_SIZE + VAL_LEN_SIZE + getRawKeyLen() + 4 * (sizeof(value)/sizeof(unsigned char*) );
     }
 
-    unsigned char* toBytes() {
+    std::deque<unsigned char> toBytes() {
         int rawKeyLen = getRawKeyLen();
         int pos = 0;
-        unsigned char* bytes = new unsigned char[getSerializeSize()];
+        std::deque<unsigned char> bytes;
 
         //Encode raw key length.
-        unsigned char* rawKeyLenBytes = new unsigned char[rawKeyLen];
+        std::deque<unsigned char> rawKeyLenBytes;
         // memcpy("dest", "source", "size") function
         memcpy(bytes, rawKeyLenBytes, RAW_KEY_LEN_SIZE);
         pos += RAW_KEY_LEN_SIZE;
@@ -161,15 +162,15 @@ public:
     }
 
 private:
-    unsigned char* key = new unsigned char[4];
-    unsigned char* value = new unsigned char[4];
+    std::deque<unsigned char> key;
+    std::deque<unsigned char> value;
     Op op;
     long sequenceId;
     int getRawKeyLen() {
         return 4 * ( sizeof(key)/sizeof(unsigned char*) ) + OP_SIZE + SEQ_ID_SIZE;
     }
 
-    KeyValue(unsigned char* paramKey, unsigned char* paramValue, Op& paramOp, long paramSequenceId) {
+    KeyValue(std::deque<unsigned char>& paramKey, std::deque<unsigned char>& paramValue, Op& paramOp, long paramSequenceId) {
         assert(paramKey != nullptr);
         assert(paramValue != nullptr);
         assert(paramOp != nullptr);//TODO: 看来要实现一个运算符重载了......
