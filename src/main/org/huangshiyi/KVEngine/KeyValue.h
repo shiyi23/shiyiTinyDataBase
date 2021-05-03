@@ -42,6 +42,10 @@ public:
                 break;
             }
         }
+        unsigned char getCode()
+        {
+            return this->code;
+        }
         // Op Put(ZERO);
         // Op Drop(ONE);
         // static const unsigned char Put = 0;
@@ -57,7 +61,7 @@ public:
 
     static KeyValue createDrop(std::deque<unsigned char>& key, long sequenceId);
 
-    std::deque<unsigned char> getkey();
+    std::deque<unsigned char> getKey();
     std::deque<unsigned char> getValue();
     int getSerializeSize();
     std::deque<unsigned char> toBytes();
@@ -66,8 +70,7 @@ public:
 
     static KeyValue parseFrom(std::deque<unsigned char>& bytes, int offset);
     static KeyValue parseFrom(std::deque<unsigned char>& bytes);
-    std::deque<unsigned char> getKey();
-    std::deque<unsigned char> getValue();
+
     long getSequenceId();
 
     std::deque<unsigned char> toBytes();
@@ -80,24 +83,20 @@ public:
     const static int OP_SIZE;
     const static int SEQ_ID_SIZE;
 
-    unsigned char getCode()
-    {
-        return this->code;
-    }
-
     Op getOp();
 
     inline Op getOp();
     inline long getSequenceId();
-
-    
 
 private:
     std::deque<unsigned char> key;
     std::deque<unsigned char> value;
     Op op;
     long sequenceId;
-    int getRawKeyLen();
+    int getRawKeyLen()
+    {
+        return KeyValue::key.size() + OP_SIZE + SEQ_ID_SIZE;
+    }
     KeyValue(std::deque<unsigned char>& paramKey, std::deque<unsigned char>& paramValue, unsigned char& paramOp,
     long paramSequenceId);
     //重载 == 运算符

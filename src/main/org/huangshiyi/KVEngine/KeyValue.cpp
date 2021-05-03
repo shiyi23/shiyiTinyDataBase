@@ -1,4 +1,5 @@
 #include "KeyValue.h"
+#include "Bytes.h"
 #include <deque>
 
 KeyValue::KeyValue()
@@ -14,12 +15,72 @@ KeyValue::KeyValue()
 
 KeyValue KeyValue::create(std::deque<unsigned char>& key, std::deque<unsigned char>& value, unsigned char& op, long sequenceId)
 {
-    KeyValue keyvalue(key, value, op, sequenceId);
-    return keyvalue;
+    KeyValue key_value(key, value, op, sequenceId);
+    return key_value;
 }
 
 KeyValue KeyValue::createPut(std::deque<unsigned char>& key, std::deque<unsigned char>& value, long sequenceId)
 {
-    KeyValue keyvalue = KeyValue::create(key, value, KeyValue::Op::Put, sequenceId);
-    return keyvalue;    
+    KeyValue key_value = KeyValue::create(key, value, KeyValue::Op::Put, sequenceId);
+    return key_value;    
 }
+
+KeyValue KeyValue::createDrop(std::deque<unsigned char>& key, long sequenceId)
+{
+    KeyValue key_value = KeyValue::create(key, Bytes::EMPTY_BYTES, KeyValue::Op::Drop, sequenceId);
+    return key_value;
+}
+
+std::deque<unsigned char> KeyValue::getKey()
+{
+    return KeyValue::key;
+}
+
+std::deque<unsigned char> KeyValue::getValue()
+{
+    return KeyValue::value;
+}
+
+KeyValue::Op KeyValue::getOp()
+{
+    return this->op;
+}
+
+long KeyValue::getSequenceId()
+{
+    return this->sequenceId;
+}
+
+std::deque<unsigned char> KeyValue::toBytes()
+{
+    int rawKeyLen = KeyValue::getRawKeyLen();
+    int pos = 0;
+
+    std::deque<unsigned char> bytes(KeyValue::getSerializeSize());
+    //Still some work to do in the next few lines
+
+}
+
+int KeyValue::compareTo(KeyValue& kv)
+{
+    if (kv.key.empty() )
+        throw "kv to compare should not to be null";
+
+    int res = Bytes::compare(this->key, kv.key);
+    if (res != 0) 
+    {
+        return res;
+    }
+    if (this->sequenceId != kv.sequenceId)
+    {
+        return this->sequenceId > kv.sequenceId ? -1 : 1;
+    }
+    //op的比较也需要操作符重载
+    if (this->op != kv.op)
+    {
+        return this->op.getCode() > kv.op.getCode() ? -1 : 1;
+    }
+    return 0;
+}
+
+
