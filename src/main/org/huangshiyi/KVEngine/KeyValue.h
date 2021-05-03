@@ -12,115 +12,23 @@
 class KeyValue
 {
 public:
-    KeyValue(/* args */);
-    KeyValue(const KeyValue& k) {};
-    ~KeyValue();
+    KeyValue();
+    KeyValue(const KeyValue& k);
+    virtual ~KeyValue();
 
-    std::deque<unsigned char> getKey() {
-        return key;
-    }
-
-    std::deque<unsigned char> getValue() {
-        return value;
-    }
-
-    int getSerializeSize() {
-        /**
-         * @brief 
-         * sizeof(value)/sizeof(unsigned char*)乘4的原因:
-         * 给key、value分配的动态空间的大小是4
-         * unsigned char* key = new unsigned char[4];
-           unsigned char* value = new unsigned char[4];
-
-         */
-        return RAW_KEY_LEN_SIZE + VAL_LEN_SIZE + getRawKeyLen() + 4 * (sizeof(value)/sizeof(unsigned char*) );
-    }
-
-    std::deque<unsigned char> toBytes() {
-        int rawKeyLen = getRawKeyLen();
-        int pos = 0;
-        std::deque<unsigned char> bytes;
-
-        //Encode raw key length.
-        std::deque<unsigned char> rawKeyLenBytes;
-        // memcpy("dest", "source", "size") function
-        memcpy(bytes, rawKeyLenBytes, RAW_KEY_LEN_SIZE);
-        pos += RAW_KEY_LEN_SIZE;
-
-
-        // Encode value length.
-        unsigned char* valLen = new unsigned char[4 * (sizeof(value)/sizeof(unsigned char*) )];
-        memcpy(bytes, valLen, VAL_LEN_SIZE);
-        pos += VAL_LEN_SIZE;
-
-        //Encode key
-        memcpy(bytes, key, 4 * (sizeof(key)/sizeof(unsigned char*) ));
-        pos += 4 * (sizeof(key)/sizeof(unsigned char*) );
-
-        //Encode Op
-        Op op;
-        bytes[pos] = op.getCode();
-        pos += 1;
-
-        //Encode sequenceId
-        unsigned char* seqIdBytes = new unsigned char[sequenceId];
-        memcpy(bytes, seqIdBytes, sequenceId * (sizeof(seqIdBytes)/sizeof(unsigned char*) ) );
-        pos += sequenceId * (sizeof(seqIdBytes)/sizeof(unsigned char*) );
-
-        //Encode value
-        memcpy(bytes, value, 4 * (sizeof(value)/sizeof(unsigned char*) ) );
-        return bytes;
-    }
-
-    int compareTo(KeyValue& kv) ;
-
-    bool equals(unsigned char& kv);
-
-    std::string toString();
-
-    static KeyValue parseFrom(unsigned char* bytes, int offset);
-
-    static KeyValue parseFrom(unsigned char* bytes);
-
-
-
-    class KeyValueComparator {
-        public:
-        KeyValueComparator() {};
-        ~KeyValueComparator(){};
-        int compare(KeyValue& a, KeyValue& b) {
-            /**
-             * 还要在这里做运算符重载这样的工作
-             * 
-             */
-            return 0;
-        }
-    };
-
-    const static int RAW_KEY_LEN_SIZE = 4;
-    const static int VAL_LEN_SIZE = 4;
-    const static int OP_SIZE = 1;
-    const static int SEQ_ID_SIZE = 8;
-    const static KeyValueComparator KV_CMP;
-    
     class Op
     {
-    private:
-        /* data */
-        const static unsigned char Put = 0;
-        const static unsigned char Drop = 1;
-        unsigned char code;
     public:
-        Op(/* args */){};
-        Op(unsigned char& paramCode) {
+        static const unsigned char ZERO = 0;
+        static const unsigned char ONE = 1;
+        Op(){}
+        Op(unsigned char& paramCode)
+        {
             this->code = paramCode;
         }
-        ~Op();
-        //友元类使用要慎重，不要滥用；我这里之所以使用友元类，
-        // 是因为我想通过外部类KeyValue访问其内部类Op的private属性.例如本文件的第74、第78行代码
-        friend class KeyValue;
-        
-        static unsigned char code2Op(unsigned char& paramCode) {
+        virtual ~Op();
+        static unsigned char code2Op(unsigned char& paramCode)
+        {
             switch ((int)paramCode)
             {
             case 0:
@@ -130,58 +38,100 @@ public:
                 return Op::Drop;
                 break;
             default:
-                std::cout<< "default break" << "\n";
+                std::cout << "default break" << "\n";
                 break;
             }
         }
-
-        unsigned char getCode() {
-            return this->code;
-        }
+        Op Put(ZERO);
+        Op Drop(ONE);
+        // static const unsigned char Put = 0;
+        // static const unsigned char Drop = 1;
+    private:
+        unsigned char code;
     };
-    Op getOp() {
-        return this->op;
+
+    static KeyValue create(std::deque<unsigned char>& key, std::deque<unsigned char>& value, Op& op, long sequenceId);
+
+    static KeyValue createPut(std::deque<unsigned char>& key, std::deque<unsigned char>& value, long sequenceId);
+
+    static KeyValue createDrop(std::deque<unsigned char>& key, long sequenceId);
+
+    std::deque<unsigned char> getkey();
+    std::deque<unsigned char> getValue();
+    int getSerializeSize();
+    std::deque<unsigned char> toBytes();
+    int compareTo(KeyValue& kv);
+    std::string toString();
+
+    static KeyValue parseFrom(std::deque<unsigned char>& bytes, int offset);
+    static KeyValue parseFrom(std::deque<unsigned char>& bytes);
+    std::deque<unsigned char> getKey();
+    std::deque<unsigned char> getValue();
+    long getSequenceId();
+
+    std::deque<unsigned char> toBytes();
+    
+    template<typename T>
+    bool equals(T& kv);
+
+    const static int RAW_KEY_LEN_SIZE;
+    const static int VAL_LEN_SIZE;
+    const static int OP_SIZE;
+    const static int SEQ_ID_SIZE;
+
+    unsigned char getCode()
+    {
+        return this->code;
     }
 
-    long getSequenceId() {
-        return this->sequenceId;
-    }
+    Op getOp();
 
+    inline Op getOp();
+    inline long getSequenceId();
 
-
-    static KeyValue create(unsigned char* key, unsigned char* value, Op& op, long sequenceId) {
-        return new KeyValue(key, value, op, sequenceId);
-    }
-
-    static KeyValue createPut(unsigned char* key, unsigned char* value, long sequenceId) {
-        return KeyValue::create(key, value, KeyValue::Op::Put, sequenceId);
-    }
-
-    static KeyValue createDrop(unsigned char* key, long sequenceId) {
-        return KeyValue::create(key, (unsigned char)0, KeyValue::Op::Drop, sequenceId);
-    }
+    
 
 private:
     std::deque<unsigned char> key;
     std::deque<unsigned char> value;
     Op op;
     long sequenceId;
-    int getRawKeyLen() {
-        return 4 * ( sizeof(key)/sizeof(unsigned char*) ) + OP_SIZE + SEQ_ID_SIZE;
+    int getRawKeyLen();
+    KeyValue(std::deque<unsigned char>& paramKey, std::deque<unsigned char>& paramValue, Op& paramOp,
+    long paramSequenceId);
+    //重载 == 运算符
+    bool operator==(KeyValue& param)
+    {
+        KeyValue itself;
+        
+        if (itself.key == param.key && itself.value == param.value)
+        {
+            return true;
+        }
+        return false;
     }
 
-    KeyValue(std::deque<unsigned char>& paramKey, std::deque<unsigned char>& paramValue, Op& paramOp, long paramSequenceId) {
-        assert(paramKey != nullptr);
-        assert(paramValue != nullptr);
-        assert(paramOp != nullptr);//TODO: 看来要实现一个运算符重载了......
-        assert(paramSequenceId >= 0);
-        this->key = paramKey;
-        this->value = paramValue;
-        this->op = paramOp;
-        this->sequenceId = paramSequenceId;        
-    }
+    class  KeyValueComparator
+    {
+    public:
+         KeyValueComparator(/* args */);
+        ~ KeyValueComparator();
+
+        int compare(KeyValue& a, KeyValue& b)
+        {
+           
+            if (a == b) return 0;
+            if (a.key.empty() && a.value.empty() ) return -1;
+            if (b.key.empty() && b.value.empty() ) return 1;
+            return a.compareTo(b);
+        }
     
+    private:
+    };
+
+    public:
+    const static KeyValueComparator KV_CMP;
 };
 
-#endif KEYVALUE_h_
 
+#endif

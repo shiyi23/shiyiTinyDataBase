@@ -14,7 +14,7 @@ private:
 public:
     BloomFilter(/* args */);
     BloomFilter(int& k, int& bitsPerKey);
-    ~BloomFilter();
+    virtual ~BloomFilter();
     std::deque<unsigned char> generate(std::deque<std::deque<unsigned char >>& keys);//函数参数是二维数组
     bool contains(std::deque<unsigned char>& key);
 };
