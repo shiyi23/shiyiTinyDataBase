@@ -19,8 +19,8 @@ public:
     class Op
     {
     public:
-        static const unsigned char ZERO = 0;
-        static const unsigned char ONE = 1;
+        static unsigned char Put;
+        static unsigned char Drop;
         Op(){}
         Op(unsigned char& paramCode)
         {
@@ -42,15 +42,16 @@ public:
                 break;
             }
         }
-        Op Put(ZERO);
-        Op Drop(ONE);
+        // Op Put(ZERO);
+        // Op Drop(ONE);
         // static const unsigned char Put = 0;
         // static const unsigned char Drop = 1;
     private:
         unsigned char code;
     };
+   
 
-    static KeyValue create(std::deque<unsigned char>& key, std::deque<unsigned char>& value, Op& op, long sequenceId);
+    static KeyValue create(std::deque<unsigned char>& key, std::deque<unsigned char>& value, unsigned char& op, long sequenceId);
 
     static KeyValue createPut(std::deque<unsigned char>& key, std::deque<unsigned char>& value, long sequenceId);
 
@@ -97,7 +98,7 @@ private:
     Op op;
     long sequenceId;
     int getRawKeyLen();
-    KeyValue(std::deque<unsigned char>& paramKey, std::deque<unsigned char>& paramValue, Op& paramOp,
+    KeyValue(std::deque<unsigned char>& paramKey, std::deque<unsigned char>& paramValue, unsigned char& paramOp,
     long paramSequenceId);
     //重载 == 运算符
     bool operator==(KeyValue& param)

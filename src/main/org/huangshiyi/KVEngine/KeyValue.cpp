@@ -7,10 +7,12 @@ KeyValue::KeyValue()
     const int VAL_LEN_SIZE = 4;
     const int OP_SIZE = 4;
     const int SEQ_ID_SIZE =8;
+    KeyValue::Op::Put = 0;
+    KeyValue::Op::Drop = 1;
     const KeyValue::KeyValueComparator KV_CMP;
 }
 
-KeyValue KeyValue::create(std::deque<unsigned char>& key, std::deque<unsigned char>& value, KeyValue::Op& op, long sequenceId)
+KeyValue KeyValue::create(std::deque<unsigned char>& key, std::deque<unsigned char>& value, unsigned char& op, long sequenceId)
 {
     KeyValue keyvalue(key, value, op, sequenceId);
     return keyvalue;
