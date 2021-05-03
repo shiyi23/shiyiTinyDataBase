@@ -36,5 +36,19 @@ std::deque<unsigned char> BloomFilter::generate(std::deque<std::deque<unsigned c
 bool BloomFilter::contains(std::deque<unsigned char>& key)
 {
     assert(!result.empty());
-    //TODO......
+    int keySize = key.size();
+    int h = Bytes::hash(key, keySize);
+    for (int t = 0; t < k; t++)
+    {
+        /* code */
+        int idx = (h % bitLen + bitLen) % bitLen;
+        if ((result[idx / 8] & (1 << (idx % 8))) == 0 ) 
+        {
+            return false;
+        }
+        int delta = (h >> 17) | (h << 15);
+        h += delta;
+        return true;
+    }
+    
 }
