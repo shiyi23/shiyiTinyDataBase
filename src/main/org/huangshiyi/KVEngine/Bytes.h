@@ -12,7 +12,7 @@ public:
     Bytes(/* args */);
     ~Bytes();
 
-    const static std::deque<unsigned char> EMPTY_BYTES;
+    static std::deque<unsigned char> EMPTY_BYTES;
 
     const static std::string HEX_TMP;
 
