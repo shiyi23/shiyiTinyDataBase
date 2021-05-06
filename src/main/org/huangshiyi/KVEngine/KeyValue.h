@@ -92,6 +92,7 @@ private:
     std::deque<unsigned char> key;
     std::deque<unsigned char> value;
     Op op;
+    // unsigned char op;
     long sequenceId;
     int getRawKeyLen()
     {

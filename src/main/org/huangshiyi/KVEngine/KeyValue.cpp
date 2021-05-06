@@ -1,6 +1,7 @@
 #include "KeyValue.h"
 #include "Bytes.h"
 #include <deque>
+#include <algorithm>
 
 KeyValue::KeyValue()
 {
@@ -55,9 +56,12 @@ std::deque<unsigned char> KeyValue::toBytes()
 {
     int rawKeyLen = KeyValue::getRawKeyLen();
     int pos = 0;
-
     std::deque<unsigned char> bytes(KeyValue::getSerializeSize());
-    //Still some work to do in the next few lines
+    
+    //Encode raw key length
+    std::deque<unsigned char> rawKeyLenBytes = Bytes::toBytes(rawKeyLen);
+    
+
 
 }
 
@@ -75,7 +79,7 @@ int KeyValue::compareTo(KeyValue& kv)
     {
         return this->sequenceId > kv.sequenceId ? -1 : 1;
     }
-    //op的比较也需要操作符重载
+    //Op类对象也需要重载!=操作符
     if (this->op != kv.op)
     {
         return this->op.getCode() > kv.op.getCode() ? -1 : 1;
