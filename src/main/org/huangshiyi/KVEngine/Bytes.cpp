@@ -40,7 +40,7 @@ std::deque<unsigned char> Bytes::toBytes(std::string& s) {
  * @param x 
  * @return std::deque<unsigned char> 
  */
-std::deque<unsigned char> Bytes::toBytes(int& x) {
+std::deque<unsigned char> Bytes::toBytes(int x) {
     std::deque<unsigned char> b;
     b[3] = (unsigned char) (x & 0xFF );
     b[2] = (unsigned char) ( (x >> 8) );

@@ -20,7 +20,7 @@ public:
 
     static std::deque<unsigned char> toBytes(std::string& s);
 
-    static std::deque<unsigned char> toBytes(int& x);
+    static std::deque<unsigned char> toBytes(int x);
 
     static std::deque<unsigned char> toBytes(long& x);
 

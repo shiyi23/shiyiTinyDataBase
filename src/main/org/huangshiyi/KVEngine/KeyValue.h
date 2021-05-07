@@ -42,16 +42,36 @@ public:
                 break;
             }
         }
-        unsigned char getCode()
+        static unsigned char getCode()
         {
-            return this->code;
+            return code;
         }
+        //为Op类的对象重载 == 操作符
+        bool operator==(Op& x)
+        {
+            if (this->code == x.code)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        //为Op类的对象重载!=操作符
+        bool operator!=(Op& x)
+        {
+            if (this->code != x.code)
+            {
+                return true;
+            }
+            return false;
+        }
+
         // Op Put(ZERO);
         // Op Drop(ONE);
         // static const unsigned char Put = 0;
         // static const unsigned char Drop = 1;
     private:
-        unsigned char code;
+        static unsigned char code;
     };
    
 
@@ -110,7 +130,7 @@ private:
             return true;
         }
         return false;
-    }
+    }   
 
     class  KeyValueComparator
     {
