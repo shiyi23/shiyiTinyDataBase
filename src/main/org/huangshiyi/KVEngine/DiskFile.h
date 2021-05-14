@@ -3,12 +3,16 @@
 
 #include "KeyValue.h"
 #include "Bytes.h"
+#include "BloomFilter.h"
 #include <deque>
 #include <string>
 //header files fro file I/O
 #include <iostream>
 #include <fstream>
 #include <set>
+#include <assert.h>
+#include <list>
+#include <algorithm>
 
 class DiskFile
 {
@@ -79,10 +83,11 @@ private:
         }
 
     };
-
+    //???????????????????????????????????/
     SeekIter<KeyValue> iterator();
     void close();
 };
+
 
 //实现内部类BlockMeta
 class DiskFile::BlockMeta
@@ -203,9 +208,18 @@ public:
         pos += BF_LEN_SIZE;
 
         //Decode bytes of block's bloom filter
-        
+        std::deque<unsigned char> bloomFilter = Bytes::slice(buf, pos, bloomFilterSize);
+        pos += bloomFilterSize;
+
+        assert(pos <= buf.size());//header file: <assert.h>
+        BlockMeta blockMeta(lastKV, blockOffset, BlockMeta::blockSize, bloomFilter);
+        return blockMeta;
     }
-    int compareTo(BlockMeta o);
+    int compareTo(BlockMeta o) 
+    {
+        int res = this->lastKV.compareTo(o.lastKV);
+        return res;
+    }
     virtual ~BlockMeta();
 
 private:
@@ -216,12 +230,213 @@ private:
     
     KeyValue lastKV;
     long blockOffset;
-    long blockSize;
+    static long blockSize;
     std::deque<unsigned char> bloomFilter;
     BlockMeta createSeekDummy(KeyValue& lastKV)
     {
         BlockMeta blockMeta(lastKV, 0L, 0L, Bytes::EMPTY_BYTES);
     }
+
+};
+
+class DiskFile::BlockIndexWriter
+{
+public:
+    void append(KeyValue& lastKV, long offset, long size, std::deque<unsigned char> bloomFilter)
+    {
+        DiskFile::BlockMeta meta(lastKV, offset, size, bloomFilter);
+        blockMetas.push_back(meta);
+        totalBytes += meta.getSerializeSize();
+    }
+
+    std::deque<unsigned char> serialize()
+    {
+        std::deque<unsigned char> buffer(totalBytes);
+        int pos = 0;
+        for (auto meta : blockMetas)
+        {
+            std::deque<unsigned char> metaBytes = meta.toBytes();
+            auto posForCopy = buffer.begin();
+            for (int i = 0; i < 0; i++)
+            {
+                ++posForCopy;
+            }
+            
+            std::copy_n(metaBytes.begin(), metaBytes.size(), posForCopy);
+            pos += metaBytes.size();
+        }
+        assert(pos == totalBytes);
+        return buffer;
+    }
+
+private:
+    std::list<DiskFile::BlockMeta> blockMetas;
+    int totalBytes = 0;
+};
+
+class DiskFile::BlockWriter
+{
+public:
+    static const int KV_SIZE_LEN = 4;
+    static const int CHECKSUM_LEN = 4;
+
+        BlockWriter() {
+        totalSize = 0; 
+        kvBuf = std::deque<KeyValue>(0);
+        bloomFilter = BloomFilter(DiskFile::BLOOM_FILTER_HASH_COUNT, DiskFile::BLOOM_FILTER_BITS_PER_KEY);
+        //????????????????????????????????????????????????????
+        crc32 = CRC32();
+    }
+
+    void append(KeyValue& kv) {
+        kvBuf.push_back(kv);
+        lastKV = kv;
+
+        //Update checksum
+        std::deque<unsigned char> buf = kv.toBytes();
+        //下面这个update()方法还没有实现
+        crc32.update(buf, 0, buf.size());
+
+        totalSize += kv.getSerializeSize();
+        KeyValueCount += 1;
+    }
+
+    std::deque<unsigned char> getBloomFilter() {
+        std::deque<std::deque<unsigned char>> bytes(kvBuf.size() );
+        for (int i = 0; i < kvBuf.size(); i++) {
+            /* code */
+            bytes[i] = kvBuf[i].getKey();
+        }
+        return bloomFilter.generate(bytes);
+    }
+
+    int getChecksum() {
+        //下面的getValue()方法同样没有实现
+        return (int) crc32.getValue();
+    }
+
+    KeyValue getLastKV() {
+        return this->lastKV;
+    }
+
+    int size() {
+        return KV_SIZE_LEN + totalSize + CHECKSUM_LEN;
+    }
+
+    int getKeyValueCount() {
+        return KeyValueCount;
+    }
+
+    std::deque<unsigned char> serialize() {
+        std::deque<unsigned char> buffer(size());
+        int pos = 0;
+        auto posForCopy = buffer.begin();
+
+        //Append kv getSerializeSize.
+        std::deque<unsigned char> kvSize = Bytes::toBytes(kvBuf.size());
+        for (int i = 0; i < pos; i++)
+        {
+            /* code */
+            ++posForCopy;
+        }
+        std::copy_n(kvSize.begin(), kvSize.size(), posForCopy);
+        pos += kvSize.size();
+
+        //Append all the key value.
+        for (int i = 0; i < kvBuf.size(); i++) {
+            for (int i = 0; i < pos; i++) {
+                ++posForCopy;
+            }
+            std::deque<unsigned char> kv = kvBuf[i].toBytes();
+            std::copy_n(kv.begin(), kv.size(), posForCopy);
+            pos += kv.size();
+        }
+        
+        //Append checksum.
+        for (int i = 0; i < pos; i++)
+        {
+            ++posForCopy;
+        }
+        std::deque<unsigned char> checksum = Bytes::toBytes(this->getChecksum());
+        std::copy_n(checksum.begin(), checksum.size(), posForCopy);
+        pos += checksum.size();
+
+        assert( pos == size());
+        return buffer;
+    }
+
+private:
+    int totalSize;
+    std::deque<KeyValue> kvBuf;
+    BloomFilter bloomFilter;
+    //Checksum类还有待实现
+    Checksum crc32;
+    KeyValue lastKV;
+    int KeyValueCount;
+
+};
+
+class DiskFile::BlockReader {
+public:
+    BlockReader() {};
+
+    BlockReader(std::deque<KeyValue>& kvBuf) {
+        this->kvBuf = kvBuf;
+    }
+
+    static BlockReader parseFrom(std::deque<unsigned char>& buffer, int offset, int size) {
+        int pos = 0;
+        std::deque<KeyValue> kvBuf(0);
+        //这里的Chesum类还没有实现
+        Checksum crc32;
+
+        //Parse kv getSerializeSize
+        std::deque<unsigned char> temp0 = Bytes::slice(buffer, offset + pos, BlockWriter::KV_SIZE_LEN);
+        int kvSize = Bytes::toInt(temp0);
+        pos += BlockWriter::KV_SIZE_LEN;
+
+        //parse all key value
+        for (int i = 0; i < kvSize; i++)
+        {
+            KeyValue kv = KeyValue::parseFrom(buffer, offset + pos);
+            kvBuf.push_back(kv);
+            //这里的crc32的例如update()相关方法也需要用C++重新实现一遍
+            crc32.update(buffer, offset + pos, kv.getSerializeSize());
+            pos += kv.getSerializeSize();
+        }
+        
+        //parse checksum
+        std::deque<unsigned char> temp1 = Bytes::slice(buffer, offset + pos, BlockWriter::CHECKSUM_LEN);
+        int checksum = Bytes::toInt(temp1);
+        pos += BlockWriter::CHECKSUM_LEN;
+        //这里的crc32.getValue()也有待实现.????????????????????????????????????????????????????
+        assert(checksum == (int) (crc32.getValue() & 0xFFFFFFFF) );
+
+        //???????????????????????????????????????????????????????????????????????
+        assert(pos == size : "pos: " + pos + ", getSerializeSize: " + size);
+
+        BlockReader newKVBuf;
+        return newKVBuf;
+    }
+
+    std::deque<KeyValue> getKeyValues() {
+        return this->kvBuf;
+    }
+
+private:
+    std::deque<KeyValue> kvBuf;
+};
+
+class DiskFile::DiskFileWriter {
+public:
+    
+
+private:
+    std::string fname;
+
+    long currentOffset;
+    BlockIndexWriter indexWriter;
+    BlockWriter currentWriter;
 
 };
 
