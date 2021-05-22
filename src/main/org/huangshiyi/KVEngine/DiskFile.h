@@ -429,7 +429,11 @@ private:
 
 class DiskFile::DiskFileWriter {
 public:
-    
+    DiskFileWriter(std::string fname) {
+        this->fname = fname;
+
+        //待写...
+    }
 
 private:
     std::string fname;
@@ -437,6 +441,25 @@ private:
     long currentOffset;
     BlockIndexWriter indexWriter;
     BlockWriter currentWriter;
+    //要替换成C++的文件输入输出流
+    FileOutputStream out; 
+    //RandomAccessFile要替换成与C++的等效的组件
+    RandomAccessFile in;
+
+    long fileSize = 0;
+    int blockCount = 0;
+    long blockIndexOffset = 0;
+    long blockIndexSize = 0;
+
+    void switchNextBlockWriter() {
+        assert(!currentWriter.getLastKV().getKey().empty() );
+
+        std::deque<unsigned char> buffer = currentWriter.serialize();
+        //以下仍有不少代码待写
+        //......
+    }
+
+    
 
 };
 
