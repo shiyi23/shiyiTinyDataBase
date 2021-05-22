@@ -20,7 +20,7 @@ public:
 
     static std::deque<unsigned char> toBytes(std::string& s);
 
-    static std::deque<unsigned char> toBytes(int& x);
+    static std::deque<unsigned char> toBytes(int x);
 
     static std::deque<unsigned char> toBytes(long& x);
 
@@ -34,7 +34,7 @@ public:
 
     static long toLong(std::deque<unsigned char>& a);
 
-    static std::deque<unsigned char> slice(std::deque<unsigned char>& buf, int& offset, int& len, int& buf_len);
+    static std::deque<unsigned char> slice(std::deque<unsigned char>& buf, int offset, int len);
 
     static int hash(std::deque<unsigned char>& key, int& key_len);
 

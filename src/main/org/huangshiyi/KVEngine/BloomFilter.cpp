@@ -3,7 +3,7 @@
 #include <deque>
 #include <cassert>
 
-BloomFilter::BloomFilter(int& k, int& bitsPerKey)
+BloomFilter::BloomFilter(int k, int bitsPerKey)
 {
     this->k = k;
     this->bitsPerKey = bitsPerKey;

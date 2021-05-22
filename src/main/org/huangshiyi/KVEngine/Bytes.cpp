@@ -40,7 +40,7 @@ std::deque<unsigned char> Bytes::toBytes(std::string& s) {
  * @param x 
  * @return std::deque<unsigned char> 
  */
-std::deque<unsigned char> Bytes::toBytes(int& x) {
+std::deque<unsigned char> Bytes::toBytes(int x) {
     std::deque<unsigned char> b;
     b[3] = (unsigned char) (x & 0xFF );
     b[2] = (unsigned char) ( (x >> 8) );
@@ -112,7 +112,7 @@ long toLong(std::deque<unsigned char>& a) {
     }
     return x;
 }
-std::deque<unsigned char> slice(std::deque<unsigned char>& buf, int& offset, int& len, int& buf_len) {
+std::deque<unsigned char> slice(std::deque<unsigned char>& buf, int offset, int len) {
     if (buf.empty() ) {
         throw "buffer is empty";
     }
@@ -122,7 +122,7 @@ std::deque<unsigned char> slice(std::deque<unsigned char>& buf, int& offset, int
         throw "Invalid offset or len!";
     }
 
-    if (offset + len > buf_len) {
+    if (offset + len > buf.size() ) {
         std::cout << "Buffer overflow, offset: " << offset << ", len: " << len <<"\n";
         throw "Buffer overflow";
     }

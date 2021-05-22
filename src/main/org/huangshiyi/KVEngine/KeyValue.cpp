@@ -60,9 +60,58 @@ std::deque<unsigned char> KeyValue::toBytes()
     
     //Encode raw key length
     std::deque<unsigned char> rawKeyLenBytes = Bytes::toBytes(rawKeyLen);
+    auto posForCopy = bytes.begin();
+    for (int i = 0; i < pos; i++)
+    {
+        ++posForCopy;
+    }
+    /**
+     * @brief 
+     * 函数原型：
+     * copy_n(InputIterator sourceBeg, Size num, OutputIterator destBeg);
+     */
+    std::copy_n(rawKeyLenBytes.begin(), RAW_KEY_LEN_SIZE, posForCopy);//header file: #include <algorithm>    
+    pos += RAW_KEY_LEN_SIZE;
+
+    //Encode value length.
+    std::deque<unsigned char> valLen = Bytes::toBytes(KeyValue::value.size());
+    for (int i = 0; i < pos; i++)
+    {
+        ++posForCopy;
+    }
     
+    std::copy_n(valLen.begin(), VAL_LEN_SIZE, posForCopy);
+    pos += VAL_LEN_SIZE;
 
+    //Encode key
+    for (int i = 0; i < pos; i++)
+    {
+        ++posForCopy;
+    }
+    std::copy_n(key.begin(), key.size(), posForCopy);
+    pos += key.size();
 
+    //Encode Op
+    bytes[pos] = KeyValue::Op::getCode();
+    pos += 1;
+
+    //Encode sequenceId
+    std::deque<unsigned char> seqIdBytes = Bytes::toBytes(sequenceId);
+    for (int i = 0; i < pos; i++)
+    {
+        ++posForCopy;
+    }
+    std::copy_n(seqIdBytes.begin(), seqIdBytes.size(), posForCopy);
+    pos += seqIdBytes.size();
+
+    //Encode value
+    for (int i = 0; i < pos; i++)
+    {
+        ++posForCopy;
+    }
+    
+    std::copy_n(value.begin(), value.size(), posForCopy);
+    return bytes;
 }
 
 int KeyValue::compareTo(KeyValue& kv)
